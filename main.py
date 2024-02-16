@@ -6,7 +6,6 @@ import os
 from discord import Embed
 import re  # Regular expressions module
 from utils import channels
-import functions
 from pymongo import MongoClient, ReturnDocument
 from pymongo.server_api import ServerApi
 from bson import ObjectId
@@ -32,7 +31,7 @@ connection_channel_id = None
 if os.getenv("token"):
     # Load configuration from environment variables
     TOKEN = os.environ.get("token")
-    PREFIX = os.environ.get("PREFIX", "/")  # The "!" is a default value in case PREFIX is not set
+    PREFIX = os.environ.get("PREFIX", "!")  # The "!" is a default value in case PREFIX is not set
     MONGO_URI = os.getenv('MONGO_URI')
     
     client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
@@ -110,9 +109,9 @@ class BuddyRequestView(discord.ui.View):
     async def leave_request(self, button: discord.ui.Button, interaction: discord.Interaction):
         user= interaction.user
         # Attempt to remove the buddy request from the database
-        result = requests_col.delete_one({"user_id": user.id, "status": "open"})
+        result = requests_col.delete_one({"user_id": user.id, "$or": [{"status": "open"}, {"status": "accepted"}]})
         if result.deleted_count > 0:
-            await interaction.response.send_message("Your buddy request has been successfully canceled.", ephemeral=True)
+            await interaction.response.send_message("Your buddy request has been successfully cancelled.", ephemeral=True)
             # Optionally, disable the request button if the leave request was successful
             # self.children[0].disabled = True  # Assuming the Request Buddy button is the first child
             await interaction.message.edit(view=self)
@@ -181,7 +180,7 @@ class BuddyAcceptView(discord.ui.View):
             await interaction.response.edit_message(content="You have successfully accepted the buddy request.", view=self)
             # Fetch the Member objects for both the requester and the accepter
             guild = interaction.guild
-            requester = guild.get_member(int(request['user_id']))
+            requester = await guild.fetch_member(int(request['user_id']))
             accepter = interaction.user  # The user who clicked the accept button
 
             # Create a private channel for them to communicate
@@ -197,7 +196,25 @@ class BuddyAcceptView(discord.ui.View):
         else:
             await interaction.response.send_message("Failed to accept the buddy request. It might have already been accepted.", ephemeral=True)
     
-@bot.command(name='sac')
+
+# @bot.command(name='sac', description='Set acceptance channel and list open buddy requests.')
+# @commands.has_permissions(administrator=True)
+# async def set_acceptance_channel(ctx):
+#     settings_col = db['settings']
+#     # Assuming 'settings_col' is your settings collection and 'requests_col' is your requests collection
+#     settings_col.update_one({}, {'$set': {'acceptance_channel_id': ctx.channel.id}}, upsert=True)
+#     open_requests = requests_col.find({'status': 'open'})
+
+#     acceptance_channel = ctx.channel  # Use the command invocation channel as the acceptance channel
+#     await ctx.send(f"Acceptance channel set to {acceptance_channel.mention}. Listing open requests...")
+
+#     for request in open_requests:  # Convert cursor to list and limit the number of requests
+#         requester_id = request['user_id']
+#         # Generate a BuddyAcceptView for each request
+#         view = BuddyAcceptView(user_id=int(request['user_id']))
+#         await acceptance_channel.send(f"Open buddy request from <@{requester_id}>. Click to accept.", view=view)
+
+@bot.command(name='sac', description='Set acceptance channel and list open buddy requests.')
 @commands.has_permissions(administrator=True)
 async def set_acceptance_channel(ctx):
     # Update the settings collection with the new acceptance channel ID
@@ -210,7 +227,7 @@ async def set_acceptance_channel(ctx):
 
     # Post a BuddyAcceptView for each unaccepted request in the newly set channel
     for user in unaccepted_requests:
-        view = BuddyAcceptView(user_id=str(user['_id']))
+        view = BuddyAcceptView(user_id=int(user['user_id']))
         await ctx.channel.send(f"New buddy request from <@{user['user_id']}>. Click to accept.", view=view)
 
 @bot.command(name="disconnect")

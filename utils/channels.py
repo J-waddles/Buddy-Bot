@@ -72,9 +72,9 @@ async def setup_buddy_channel(guild, channel_name, newbie, buddy):
             guild.me: PermissionOverwrite(read_messages=True, send_messages=True)  # bot permissions
         }
         
-        category = get(guild.categories, name="Buddy Connections")
+        category = get(guild.categories, name="╭━━━🫂 Buddy 🫂━━━╮")
         if category is None:
-            category = await guild.create_category("Buddy Connections")
+            category = await guild.create_category("╭━━━🫂 Buddy 🫂━━━╮")
         
         channel_name = f"buddy-{newbie.display_name}-{buddy.display_name}"
         channel = await guild.create_text_channel(name=channel_name, overwrites=overwrites, category=category)
