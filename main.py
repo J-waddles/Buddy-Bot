@@ -28,9 +28,9 @@ admin_channel_id = None
 connection_channel_id = None 
 
 # Load the env
-if os.getenv("token"):
+if os.getenv("TOKEN"):
     # Load configuration from environment variables
-    TOKEN = os.environ.get("token")
+    TOKEN = os.environ.get("TOKEN")
     PREFIX = os.environ.get("PREFIX", "!")  # The "!" is a default value in case PREFIX is not set
     MONGO_URI = os.getenv('MONGO_URI')
     
@@ -50,7 +50,7 @@ else:
     with open('config.json', 'r') as f:
         config = json.load(f)
     
-    MONGO_URI = config.get('mongo_uri')
+    MONGO_URI = config.get('MONGO_URI')
     client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
     try:
         client.admin.command('ping')
@@ -252,9 +252,9 @@ async def on_ready():
     print(f'Logged in as {bot.user.name}!')
 
 # Run the bot
-if os.getenv("token"):
+if os.getenv("TOKEN"):
     bot.run(TOKEN)
 
 # a seperate token to test without needing to upload
 else:
-    bot.run(config['testToken'])
+    bot.run(config['TESTTOKEN'])
