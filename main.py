@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 from discord.ui import Button, View, Modal
 import json
 import os
-from discord import Embed
+from discord import Embed, app_commands
 import mysql.connector
 
 
