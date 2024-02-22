@@ -4,11 +4,6 @@ from discord.ui import Button, View, Modal
 import json
 import os
 from discord import Embed
-import re  # Regular expressions module
-from utils import channels
-from pymongo import MongoClient, ReturnDocument
-from pymongo.server_api import ServerApi
-from bson import ObjectId
 import mysql.connector
 
 
