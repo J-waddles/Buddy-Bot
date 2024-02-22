@@ -133,17 +133,17 @@ class BuddyRequestView(discord.ui.View):
             await interaction.response.send_message("You don't have an open buddy request to cancel.", ephemeral=True)
 
 
-@bot.slash_command(name="request_buddy", description="Request to be paired with a buddy.")
+@bot.tree.command(name="request_buddy", description="Request to be paired with a buddy.")
 @commands.has_permissions(administrator=True)
-async def request_buddy(ctx):
+async def request_buddy(interaction: discord.Interaction):
     embed = Embed(
         title="Request Buddy",
         description="Welcome to our community! \nWe hope to accommodate you with a personal buddy to help you out. \nPlease request a buddy and someone will join you shortly.",
         color=0xdeffee
     )
     view = BuddyRequestView()
-    await ctx.respond(embed=embed, view=view)
-    store_view_info(ctx.guild.id, ctx.channel.id, view.custom_id)   
+    await interaction.response.send_message(embed=embed, view=view)
+    store_view_info(interaction.guild.id, interaction.channel.id, view.custom_id)   
 
 async def handle_buddy_request(guild_id: str, user_id: str):
     # Convert IDs to strings for consistency
