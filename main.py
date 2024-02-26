@@ -336,7 +336,7 @@ def check_database_initialised(mycursor):
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}!')
-    
+    bot.add_view(BuddyRequestView())
 
     if not check_database_initialised(mycursor):
         print("Initialising database...")
@@ -358,8 +358,7 @@ async def on_ready():
     #             )
     #             view = BuddyRequestView()
     #             await channel.send(embed=embed, view=view)
-view = BuddyRequestView()
-bot.add_view(view)
+
 # Run the bot
 if os.getenv("TOKEN"):
     print("Running in production mode.")
