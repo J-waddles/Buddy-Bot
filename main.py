@@ -70,7 +70,7 @@ class BuddyRequestView(discord.ui.View):
         self.custom_id = 'buddy_request_view'  # Assign a custom ID to the view
 
     @discord.ui.button(label="Request Buddy", style=discord.ButtonStyle.green, custom_id="request_buddy")
-    async def request_buddy(self, button: discord.ui.Button,  interaction: discord.Interaction):
+    async def request_buddy(self,  interaction: discord.Interaction, button: discord.ui.Button):
         user_id = str(interaction.user.id)
         guild_id = str(interaction.guild.id)  # Assuming guild-specific buddy requests
 
@@ -193,7 +193,7 @@ class BuddyAcceptView(discord.ui.View):
                 item.disabled = True
 
     @discord.ui.button(label="Accept Buddy", style=discord.ButtonStyle.green, custom_id="accept_buddy")
-    async def accept_buddy(self, button: discord.ui.Button,interaction: discord.Interaction):
+    async def accept_buddy(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Convert user_id to ObjectId
         user_id = self.user_id
         user_id_int = int(user_id)
