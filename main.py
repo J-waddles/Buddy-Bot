@@ -116,7 +116,7 @@ class BuddyRequestView(discord.ui.View):
             await interaction.response.send_message("The buddy acceptance channel has not been set. Please contact an admin.", ephemeral=True)
     
     @discord.ui.button(label="Leave Request", style=discord.ButtonStyle.danger, custom_id="leave_request")
-    async def leave_request(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def leave_request(self, interaction: discord.Interaction, button: discord.ui.Button):
         user_id = str(interaction.user.id)
         guild_id = str(interaction.guild.id
         )
@@ -358,10 +358,8 @@ async def on_ready():
     #             )
     #             view = BuddyRequestView()
     #             await channel.send(embed=embed, view=view)
-    
-    # mycursor.close()
-    # mydb.close()
-
+view = BuddyRequestView()
+bot.add_view(view)
 # Run the bot
 if os.getenv("TOKEN"):
     print("Running in production mode.")
