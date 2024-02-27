@@ -231,11 +231,6 @@ class BuddyAcceptView(discord.ui.View):
             accepter = interaction.user  # The user who clicked the accept button
 
             # Create a private channel for them to communicate
-            overwrites = {
-                guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                requester: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                accepter: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-            }
             channel_name = f"buddy-{requester.display_name}-{accepter.display_name}"
 
             await setup_buddy_channel(guild, channel_name, requester, accepter)
