@@ -183,7 +183,7 @@ def store_view_info(guild_id, channel_id, view_custom_id):
 
 class BuddyAcceptView(discord.ui.View):
     def __init__(self, user_id: str):
-        super().__init__()
+        super().__init__(timeout=None)
         self.user_id = user_id
 
     async def disable_buttons(self):
