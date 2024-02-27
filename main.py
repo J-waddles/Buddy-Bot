@@ -297,6 +297,8 @@ async def on_request_buddy(interaction: discord.Interaction, user_id: str):
         if channel:
             view = BuddyAcceptView(user_id=user_id)  # Adjusted for user_id as a string
             await channel.send(f"New buddy request from <@{user_id}>. Click to accept.", view=view)
+    
+    bot.add_view(BuddyAcceptView())
 
 
 def initialise_database(mycursor):
@@ -337,7 +339,6 @@ def check_database_initialised(mycursor):
 async def on_ready():
     print(f'Logged in as {bot.user.name}!')
     bot.add_view(BuddyRequestView())
-    bot.add_view(BuddyAcceptView())
 
     if not check_database_initialised(mycursor):
         print("Initialising database...")
