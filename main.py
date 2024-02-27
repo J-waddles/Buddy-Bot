@@ -5,7 +5,6 @@ import json
 import os
 from discord import Embed, app_commands
 import mysql.connector
-from discord.commands import Option
 
 
 from utils.queue import (enqueue_user, dequeue_user, is_pair_available, get_next_pair, 
