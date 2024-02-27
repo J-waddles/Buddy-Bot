@@ -118,8 +118,7 @@ class BuddyRequestView(discord.ui.View):
     @discord.ui.button(label="Leave Request", style=discord.ButtonStyle.danger, custom_id="leave_request")
     async def leave_request(self, interaction: discord.Interaction, button: discord.ui.Button):
         user_id = str(interaction.user.id)
-        guild_id = str(interaction.guild.id
-        )
+        guild_id = str(interaction.guild.id)
 
         # Attempt to remove the buddy request from the database
         mycursor.execute("DELETE FROM BuddyRequests WHERE user_id = %s AND guild_id = %s AND (status = 'open' OR status = 'accepted')", (user_id, guild_id))
@@ -332,6 +331,20 @@ def check_database_initialised(mycursor):
 async def on_ready():
     print(f'Logged in as {bot.user.name}!')
     bot.add_view(BuddyRequestView())
+
+
+    for guild in bot.guilds:
+        print(f'Processing guild: {guild.name} (ID: {guild.id})')
+        # Here, replace 'your_db_connection' with your actual database connection or cursor
+        sql = "SELECT user_id FROM BuddyRequests WHERE guild_id = %s AND status = 'open'"
+        val = (guild.id,)
+        mycursor.execute(sql, val)
+        unaccepted_requests = mycursor.fetchall()
+
+        # Iterate over each unaccepted request and add a BuddyAcceptView for it
+        for request in unaccepted_requests:
+            user_id = request[0]
+            bot.add_view(BuddyAcceptView(user_id=user_id))  # Adjust parameters as necessary
 
     if not check_database_initialised(mycursor):
         print("Initialising database...")
