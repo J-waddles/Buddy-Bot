@@ -337,6 +337,7 @@ def check_database_initialised(mycursor):
 async def on_ready():
     print(f'Logged in as {bot.user.name}!')
     bot.add_view(BuddyRequestView())
+    bot.add_view(BuddyAcceptView())
 
     if not check_database_initialised(mycursor):
         print("Initialising database...")
