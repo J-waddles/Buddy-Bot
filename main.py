@@ -267,7 +267,7 @@ async def set_acceptance_channel(ctx):
     for request in unaccepted_requests:
         user_id = request[0]
         view = BuddyAcceptView(user_id)  # Ensure BuddyAcceptView is adjusted for MySQL
-        await ctx.channel.send(f"New buddy request from <@{'user_id'}>. Click to accept.", view=view)
+        await ctx.channel.send(f"New buddy request from <@{user_id}>. Click to accept.", view=view)
 
 @bot.command(name="disconnect")
 async def disconnect(ctx):
@@ -297,8 +297,6 @@ async def on_request_buddy(interaction: discord.Interaction, user_id: str):
         if channel:
             view = BuddyAcceptView(user_id=user_id)  # Adjusted for user_id as a string
             await channel.send(f"New buddy request from <@{user_id}>. Click to accept.", view=view)
-    
-    bot.add_view(BuddyAcceptView())
 
 
 def initialise_database(mycursor):
