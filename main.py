@@ -5,6 +5,7 @@ import json
 import os
 from discord import Embed, app_commands
 import mysql.connector
+from discord.commands import Option
 
 
 from utils.queue import (enqueue_user, dequeue_user, is_pair_available, get_next_pair, 
@@ -292,6 +293,40 @@ async def on_request_buddy(interaction: discord.Interaction, user_id: str):
             view = BuddyAcceptView(user_id=user_id)  # Adjusted for user_id as a string
             await channel.send(f"New buddy request from <@{user_id}>. Click to accept.", view=view)
 
+
+async def delete_channels_with_prefixes(guild, prefixes):
+    """
+    Deletes all channels in the specified guild that start with any of the given prefixes.
+
+    Parameters:
+    - guild: discord.Guild object
+    - prefixes: List[str], a list of prefixes to check for
+    """
+    for channel in guild.channels:
+        if any(channel.name.startswith(prefix) for prefix in prefixes):
+            try:
+                await channel.delete()
+                print(f'Deleted channel: {channel.name}')
+            except discord.Forbidden:
+                print(f'Permission Denied: Cannot delete channel {channel.name}')
+            except discord.HTTPException as e:
+                print(f'HTTP Exception: Failed to delete {channel.name}, {e}')
+
+@bot.command()
+async def cleanup_channels(ctx, *prefixes):
+    """
+    A command to trigger the deletion of channels starting with specified prefixes.
+
+    Parameters:
+    - ctx: The context under which the command is executed.
+    - prefixes: Variable length argument list for prefixes to search for.
+    """
+    if not prefixes:
+        await ctx.send("No prefixes provided. Please provide at least one prefix.")
+        return
+
+    await delete_channels_with_prefixes(ctx.guild, prefixes)
+    await ctx.send(f'All channels starting with the specified prefixes have been deleted.')
 
 def initialise_database(mycursor):
 
