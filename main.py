@@ -227,7 +227,7 @@ class BuddyAcceptView(discord.ui.View):
             # Fetch the Member objects for both the requester and the accepter
             guild = interaction.guild
             requester_id = user[0]
-            requester = await guild.fetch_member(int(requester_id))
+            requester = await guild.fetch_member(requester_id)
             accepter = interaction.user  # The user who clicked the accept button
 
             # Create a private channel for them to communicate
