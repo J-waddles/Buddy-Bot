@@ -313,6 +313,7 @@ async def delete_channels_with_prefixes(guild, prefixes):
                 print(f'HTTP Exception: Failed to delete {channel.name}, {e}')
 
 @bot.command()
+@commands.has_permissions(administrator=True)
 async def cleanup_channels(ctx, *prefixes):
     """
     A command to trigger the deletion of channels starting with specified prefixes.
