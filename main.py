@@ -98,8 +98,6 @@ def execute_query_with_reconnection(mydb, query, params=None):
             return mycursor.fetchall()
     except Error as err:
         print(f"Error: '{err}'")
-    finally:
-        mycursor.close()
 
 
 
@@ -115,9 +113,13 @@ class BuddyRequestView(discord.ui.View):
         user_id = str(interaction.user.id)
         guild_id = str(interaction.guild.id)  # Assuming guild-specific buddy requests
         mydb = create_db_connection()
+
+        if not mydb:
+            await interaction.response.send_message("Database connection failed. Please try again later.", ephemeral=True)
+            return
+
         # Check for existing request
-        mycursor.execute("SELECT * FROM BuddyRequests WHERE user_id = %s AND guild_id = %s AND (status = 'open' OR status = 'accepted')", (user_id, guild_id))
-        existing_request = mycursor.fetchone()
+        existing_request = await execute_query_with_reconnection(mydb, "SELECT * FROM BuddyRequests WHERE user_id = %s AND guild_id = %s AND (status = 'open' OR status = 'accepted')", (user_id, guild_id))
         if existing_request:
             embed = Embed(
                         title="NO double dipping!",
@@ -156,6 +158,7 @@ class BuddyRequestView(discord.ui.View):
         else:
             await interaction.response.send_message("The buddy acceptance channel has not been set. Please contact an admin.", ephemeral=True)
         mydb.close()
+        
     @discord.ui.button(label="Leave Request", style=discord.ButtonStyle.danger, custom_id="leave_request")
     async def leave_request(self, interaction: discord.Interaction, button: discord.ui.Button):
         user_id = str(interaction.user.id)
