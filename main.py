@@ -98,6 +98,8 @@ def execute_query_with_reconnection(mydb, query, params=None):
             return mycursor.fetchall()
     except Error as err:
         print(f"Error: '{err}'")
+    finally:
+        mycursor.close()
 
 
 
@@ -113,13 +115,11 @@ class BuddyRequestView(discord.ui.View):
         user_id = str(interaction.user.id)
         guild_id = str(interaction.guild.id)  # Assuming guild-specific buddy requests
         mydb = create_db_connection()
-
-        if not mydb:
-            await interaction.response.send_message("Database connection failed. Please try again later.", ephemeral=True)
-            return
+        mycursor = mydb.cursor(buffered=True)
 
         # Check for existing request
-        existing_request = await execute_query_with_reconnection(mydb, "SELECT * FROM BuddyRequests WHERE user_id = %s AND guild_id = %s AND (status = 'open' OR status = 'accepted')", (user_id, guild_id))
+        mycursor.execute("SELECT * FROM BuddyRequests WHERE user_id = %s AND guild_id = %s AND (status = 'open' OR status = 'accepted')", (user_id, guild_id))
+        existing_request = mycursor.fetchone()
         if existing_request:
             embed = Embed(
                         title="NO double dipping!",
@@ -158,12 +158,12 @@ class BuddyRequestView(discord.ui.View):
         else:
             await interaction.response.send_message("The buddy acceptance channel has not been set. Please contact an admin.", ephemeral=True)
         mydb.close()
-        
     @discord.ui.button(label="Leave Request", style=discord.ButtonStyle.danger, custom_id="leave_request")
     async def leave_request(self, interaction: discord.Interaction, button: discord.ui.Button):
         user_id = str(interaction.user.id)
         guild_id = str(interaction.guild.id)
         mydb = create_db_connection()
+        mycursor = mydb.cursor(buffered=True)
         # Attempt to remove the buddy request from the database
         mycursor.execute("DELETE FROM BuddyRequests WHERE user_id = %s AND guild_id = %s AND (status = 'open' OR status = 'accepted')", (user_id, guild_id))
         deleted_count = mycursor.rowcount
@@ -215,6 +215,7 @@ async def request_buddy(interaction: discord.Interaction):
 
 def store_view_info(guild_id, channel_id, view_custom_id):
     mydb = create_db_connection()
+    mycursor = mydb.cursor(buffered=True)
     mycursor.execute("""
         INSERT INTO GuildSettings (guild_id, channel_id, view_custom_id)
         VALUES (%s, %s, %s)
@@ -243,6 +244,8 @@ class BuddyAcceptView(discord.ui.View):
         user_id_int = int(user_id)
         print(f"Attempting to fetch buddy user with ID: {user_id}")
         mydb = create_db_connection()
+        mycursor = mydb.cursor(buffered=True)
+
         # Prepare SQL query to verify user status
         sql = "SELECT user_id, guild_id, status FROM BuddyRequests WHERE user_id = %s AND status = 'open'"
         val = (user_id_int,)
@@ -290,6 +293,8 @@ async def set_acceptance_channel(ctx):
     guild_id = str(ctx.guild.id)
     acceptance_channel_id = str(ctx.channel.id)
     mydb = create_db_connection()
+    mycursor = mydb.cursor(buffered=True)
+
     # Update the guild-specific settings with the new acceptance channel ID
     sql = "REPLACE INTO GuildSettings (guild_id, acceptance_channel_id) VALUES (%s, %s)"
     val = (guild_id, acceptance_channel_id)
@@ -319,6 +324,7 @@ async def disconnect(ctx):
 async def on_request_buddy(interaction: discord.Interaction, user_id: str):
     guild_id = str(interaction.guild.id)
     mydb = create_db_connection()
+    mycursor = mydb.cursor(buffered=True)
     # Insert the buddy request into MySQL database
     sql_insert = "INSERT INTO BuddyRequests (guild_id, user_id, status) VALUES (%s, %s, 'open')"
     val_insert = (guild_id, user_id)
@@ -377,6 +383,7 @@ async def cleanup_channels(ctx, *prefixes):
 
 def initialise_database(mycursor):
     mydb = create_db_connection()
+    mycursor = mydb.cursor(buffered=True)
     # Create or update the GuildSettings table to include acceptance_channel_id
     mycursor.execute("""
         CREATE TABLE IF NOT EXISTS GuildSettings (
@@ -415,6 +422,7 @@ async def on_ready():
     print(f'Logged in as {bot.user.name}!')
     bot.add_view(BuddyRequestView())
     mydb = create_db_connection()
+    mycursor = mydb.cursor(buffered=True)
 
     for guild in bot.guilds:
         print(f'Processing guild: {guild.name} (ID: {guild.id})')
