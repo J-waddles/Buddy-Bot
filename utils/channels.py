@@ -28,7 +28,7 @@ async def setup_buddy_channel(guild, channel, newbie, buddy):
             print("No category found for the channel.")
             return
         
-        category_name = channel        
+        category_name = existing_category.name        
         category = get(guild.categories, name=category_name)
         if category is None:
             category = await guild.create_category("╭━━━🫂 Buddy 🫂━━━╮")
