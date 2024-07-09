@@ -12,7 +12,7 @@ async def setup_buddy_channel(guild, channel_name, newbie, buddy):
     buddy_role = get(guild.roles, name="Buddy")
     member_role = get(guild.roles, name="Member")
 
-    existing_category = channel.category
+    existing_category = channel_name.category
     if not existing_category:
         print("No category found for the channel.")
         return
