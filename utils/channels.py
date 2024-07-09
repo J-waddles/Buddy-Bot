@@ -2,7 +2,6 @@ import discord
 from discord import PermissionOverwrite
 from discord.utils import get
 
-user_channel_count = {}  # Global dictionary to track user channel counts
 
 async def setup_buddy_channel(guild, channel_name, newbie, buddy):
     # Check roles and create a private channel for buddy and newbie
