@@ -281,7 +281,9 @@ class BuddyAcceptView(discord.ui.View):
             # Create a private channel for them to communicate
             channel_name = f"buddy-{requester.display_name}-{accepter.display_name}"
 
-            await setup_buddy_channel(guild, interaction.channel, requester, accepter)
+            channel = interaction.channel
+
+            await setup_buddy_channel(guild, channel, requester, accepter)
             
         else:
             await interaction.response.send_message("Failed to accept the buddy request. It might have already been accepted.", ephemeral=True)
