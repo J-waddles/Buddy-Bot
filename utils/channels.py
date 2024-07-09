@@ -3,6 +3,9 @@ from discord import PermissionOverwrite
 from discord.utils import get
 
 
+async def delete_private_channel(channel):
+    await channel.delete()
+
 async def setup_buddy_channel(guild, channel_name, newbie, buddy):
     # Check roles and create a private channel for buddy and newbie
     newbie_role = get(guild.roles, name="Newbie")
