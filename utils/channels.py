@@ -9,6 +9,14 @@ async def setup_buddy_channel(guild, channel_name, newbie, buddy):
     newbie_role = get(guild.roles, name="Newbie")
     buddy_role = get(guild.roles, name="Buddy")
     member_role = get(guild.roles, name="Member")
+
+    existing_category = channel.category
+    if not existing_category:
+        print("No category found for the channel.")
+        return
+    
+    category_name = existing_category.name
+
     
     if newbie_role in newbie.roles and buddy_role in buddy.roles:
         # Setup permissions
@@ -19,7 +27,7 @@ async def setup_buddy_channel(guild, channel_name, newbie, buddy):
             guild.me: PermissionOverwrite(read_messages=True, send_messages=True)  # bot permissions
         }
         
-        category = get(guild.categories, name="╭━━━🫂 Buddy 🫂━━━╮")
+        category = get(guild.categories, name=category_name)
         if category is None:
             category = await guild.create_category("╭━━━🫂 Buddy 🫂━━━╮")
         
