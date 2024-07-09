@@ -318,6 +318,15 @@ async def set_acceptance_channel(ctx):
 @bot.command(name="disconnect")
 async def disconnect(ctx):
     channel = ctx.channel
+    prefix = "buddy"
+    if channel.name.startswith(prefix):
+            try:
+                await channel.delete()
+                print(f'Deleted channel: {channel.name}')
+            except discord.Forbidden:
+                print(f'Permission Denied: Cannot delete channel {channel.name}')
+            except discord.HTTPException as e:
+                print(f'HTTP Exception: Failed to delete {channel.name}, {e}')
     await delete_private_channel(channel)
 
 @bot.event
