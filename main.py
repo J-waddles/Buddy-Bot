@@ -158,6 +158,8 @@ class BuddyRequestView(discord.ui.View):
         else:
             await interaction.response.send_message("The buddy acceptance channel has not been set. Please contact an admin.", ephemeral=True)
         mydb.close()
+    
+    # Leave request to be deleted or disble the ability to get a new buddy. Fix
     @discord.ui.button(label="Leave Request", style=discord.ButtonStyle.danger, custom_id="leave_request")
     async def leave_request(self, interaction: discord.Interaction, button: discord.ui.Button):
         user_id = str(interaction.user.id)
@@ -188,31 +190,6 @@ async def request_buddy(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, view=view)
     store_view_info(interaction.guild.id, interaction.channel.id, view.custom_id)   
 
-# async def handle_buddy_request(guild_id: str, user_id: str):
-#     # Convert IDs to strings for consistency
-#     guild_id_str = str(guild_id)
-#     user_id_str = str(user_id)
-
-#     # Insert the buddy request into the MySQL database
-#     sql_insert = "INSERT INTO BuddyRequests (guild_id, user_id, status) VALUES (%s, %s, 'open')"
-#     val_insert = (guild_id_str, user_id_str)
-#     mycursor.execute(sql_insert, val_insert)
-#     mydb.commit()
-#     user_id = mycursor.lastrowid  # Get the last inserted ID
-    
-#     # Fetch the designated channel ID for buddy requests for the specific guild
-#     sql_select = "SELECT buddy_acceptance_channel_id FROM GuildSettings WHERE guild_id = %s"
-#     val_select = (guild_id_str,)
-#     mycursor.execute(sql_select, val_select)
-#     settings = mycursor.fetchone()
-
-#     if settings and settings[0]:
-#         acceptance_channel_id = settings[0]
-#         channel = bot.get_channel(int(acceptance_channel_id))
-#         if channel:
-#             view = BuddyAcceptView(user_id=str(user_id))  # Ensure BuddyAcceptView is adjusted for MySQL
-#             await channel.send(f"New buddy request from <@{user_id_str}>. Click to accept.", view=view)
-
 def store_view_info(guild_id, channel_id, view_custom_id):
     mydb = create_db_connection()
     mycursor = mydb.cursor(buffered=True)
@@ -237,6 +214,8 @@ class BuddyAcceptView(discord.ui.View):
             if isinstance(item, discord.ui.Button):
                 item.disabled = True
 
+#Initiates a buddy request message in a seperate server
+#Used with a buddy role that must accept the requests
     @discord.ui.button(label="Accept Buddy", style=discord.ButtonStyle.green, custom_id="accept_buddy")
     async def accept_buddy(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Convert user_id to ObjectId
@@ -262,7 +241,6 @@ class BuddyAcceptView(discord.ui.View):
             await interaction.response.send_message("This buddy request has already been accepted.", ephemeral=True)
             return
 
-        # Step 2: Attempt to update the buddy request status if it's open
         # Update the buddy request status to 'accepted'
         sql_update = "UPDATE BuddyRequests SET status = 'accepted' WHERE user_id = %s AND status = 'open'"
         mycursor.execute(sql_update, val)
@@ -289,6 +267,7 @@ class BuddyAcceptView(discord.ui.View):
             await interaction.response.send_message("Failed to accept the buddy request. It might have already been accepted.", ephemeral=True)
         mydb.close()
 
+#setting the private channel for Buddy's to accept 
 @bot.command(name='sac', description='Set acceptance channel and list open buddy requests.')
 @commands.has_permissions(administrator=True)
 async def set_acceptance_channel(ctx):
@@ -317,10 +296,11 @@ async def set_acceptance_channel(ctx):
         await ctx.channel.send(f"New buddy request from <@{user_id}>. Click to accept.", view=view)
     mydb.close()
 
+# Potentially dangerous maybe buddy fix
 @bot.command(name="disconnect")
 async def disconnect(ctx):
     channel = ctx.channel
-    prefix = "buddy"
+    prefix = "buddy-"
     if channel.name.startswith(prefix):
             try:
                 await channel.delete()
@@ -329,7 +309,6 @@ async def disconnect(ctx):
                 print(f'Permission Denied: Cannot delete channel {channel.name}')
             except discord.HTTPException as e:
                 print(f'HTTP Exception: Failed to delete {channel.name}, {e}')
-    await delete_private_channel(channel)
 
 @bot.event
 async def on_request_buddy(interaction: discord.Interaction, user_id: str):
@@ -357,40 +336,42 @@ async def on_request_buddy(interaction: discord.Interaction, user_id: str):
             await channel.send(f"New buddy request from <@{user_id}>. Click to accept.", view=view)
     mydb.close()
 
-async def delete_channels_with_prefixes(guild, prefixes):
-    """
-    Deletes all channels in the specified guild that start with any of the given prefixes.
 
-    Parameters:
-    - guild: discord.Guild object
-    - prefixes: List[str], a list of prefixes to check for
-    """
-    for channel in guild.channels:
-        if any(channel.name.startswith(prefix) for prefix in prefixes):
-            try:
-                await channel.delete()
-                print(f'Deleted channel: {channel.name}')
-            except discord.Forbidden:
-                print(f'Permission Denied: Cannot delete channel {channel.name}')
-            except discord.HTTPException as e:
-                print(f'HTTP Exception: Failed to delete {channel.name}, {e}')
+# async def delete_channels_with_prefixes(guild, prefixes):
+#     """
+#     Deletes all channels in the specified guild that start with any of the given prefixes.
 
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def cleanup_channels(ctx, *prefixes):
-    """
-    A command to trigger the deletion of channels starting with specified prefixes.
+#     Parameters:
+#     - guild: discord.Guild object
+#     - prefixes: List[str], a list of prefixes to check for
+#     """
+#     for channel in guild.channels:
+#         if any(channel.name.startswith(prefix) for prefix in prefixes):
+#             try:
+#                 await channel.delete()
+#                 print(f'Deleted channel: {channel.name}')
+#             except discord.Forbidden:
+#                 print(f'Permission Denied: Cannot delete channel {channel.name}')
+#             except discord.HTTPException as e:
+#                 print(f'HTTP Exception: Failed to delete {channel.name}, {e}')
 
-    Parameters:
-    - ctx: The context under which the command is executed.
-    - prefixes: Variable length argument list for prefixes to search for.
-    """
-    if not prefixes:
-        await ctx.send("No prefixes provided. Please provide at least one prefix.")
-        return
 
-    await delete_channels_with_prefixes(ctx.guild, prefixes)
-    await ctx.send(f'All channels starting with the specified prefixes have been deleted.')
+# @bot.command()
+# @commands.has_permissions(administrator=True)
+# async def cleanup_channels(ctx, *prefixes):
+#     """
+#     A command to trigger the deletion of channels starting with specified prefixes.
+
+#     Parameters:
+#     - ctx: The context under which the command is executed.
+#     - prefixes: Variable length argument list for prefixes to search for.
+#     """
+#     if not prefixes:
+#         await ctx.send("No prefixes provided. Please provide at least one prefix.")
+#         return
+
+#     await delete_channels_with_prefixes(ctx.guild, prefixes)
+#     await ctx.send(f'All channels starting with the specified prefixes have been deleted.')
 
 def initialise_database(mycursor):
     mydb = create_db_connection()
@@ -455,20 +436,6 @@ async def on_ready():
         print("Database already initialised.") 
     mydb.close()
 
-    # mycursor.execute("SELECT guild_id, channel_id, view_custom_id FROM GuildSettings WHERE view_custom_id IS NOT NULL")
-    
-    # for (guild_id, channel_id, view_custom_id) in mycursor:
-    #     guild = bot.get_guild(guild_id)
-    #     if guild:
-    #         channel = guild.get_channel(channel_id)
-    #         if channel:
-    #             embed = Embed(
-    #             title="Request Buddy",
-    #             description="Welcome to our community! \nWe hope to accommodate you with a personal buddy to help you out. \nPlease request a buddy and someone will join you shortly.",
-    #             color=0xdeffee
-    #             )
-    #             view = BuddyRequestView()
-    #             await channel.send(embed=embed, view=view)
 
 # Run the bot
 if os.getenv("TOKEN"):
