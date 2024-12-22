@@ -10,7 +10,7 @@ from mysql.connector import Error
 from utils.queue import (enqueue_user, dequeue_user, is_pair_available, get_next_pair, 
                          add_request, is_request_pending, get_requester, remove_request)
 from utils.roles import add_role_to_user, remove_role_from_user
-from utils.channels import delete_private_channel, setup_buddy_channel
+from utils.channels import setup_buddy_channel
 
 
 
