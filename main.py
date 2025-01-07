@@ -159,24 +159,24 @@ class BuddyRequestView(discord.ui.View):
             await interaction.response.send_message("The buddy acceptance channel has not been set. Please contact an admin.", ephemeral=True)
         mydb.close()
     
-    # Leave request to be deleted or disble the ability to get a new buddy. Fix
-    @discord.ui.button(label="Leave Request", style=discord.ButtonStyle.danger, custom_id="leave_request")
-    async def leave_request(self, interaction: discord.Interaction, button: discord.ui.Button):
-        user_id = str(interaction.user.id)
-        guild_id = str(interaction.guild.id)
-        mydb = create_db_connection()
-        mycursor = mydb.cursor(buffered=True)
-        # Attempt to remove the buddy request from the database
-        mycursor.execute("DELETE FROM BuddyRequests WHERE user_id = %s AND guild_id = %s AND (status = 'open' OR status = 'accepted')", (user_id, guild_id))
-        deleted_count = mycursor.rowcount
-        mydb.commit()
-        if deleted_count > 0:
-            await interaction.response.send_message("Your buddy request has been successfully cancelled.", ephemeral=True)
+    # # Leave request to be deleted or disble the ability to get a new buddy. Fix
+    # @discord.ui.button(label="Leave Request", style=discord.ButtonStyle.danger, custom_id="leave_request")
+    # async def leave_request(self, interaction: discord.Interaction, button: discord.ui.Button):
+    #     user_id = str(interaction.user.id)
+    #     guild_id = str(interaction.guild.id)
+    #     mydb = create_db_connection()
+    #     mycursor = mydb.cursor(buffered=True)
+    #     # Attempt to remove the buddy request from the database
+    #     mycursor.execute("DELETE FROM BuddyRequests WHERE user_id = %s AND guild_id = %s AND (status = 'open' OR status = 'accepted')", (user_id, guild_id))
+    #     deleted_count = mycursor.rowcount
+    #     mydb.commit()
+    #     if deleted_count > 0:
+    #         await interaction.response.send_message("Your buddy request has been successfully cancelled.", ephemeral=True)
             
-            await interaction.message.edit(view=self)
-        else:
-            await interaction.response.send_message("You don't have an open buddy request to cancel.", ephemeral=True)
-        mydb.close()
+    #         await interaction.message.edit(view=self)
+    #     else:
+    #         await interaction.response.send_message("You don't have an open buddy request to cancel.", ephemeral=True)
+    #     mydb.close()
 
 @bot.tree.command(name="request_buddy", description="Request to be paired with a buddy.")
 @commands.has_permissions(administrator=True)
